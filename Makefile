@@ -9,17 +9,9 @@ REPO_BUILD_PATH = $(REPO_PATH)/build
 REPO_MAKEFILE = $(REPO_BUILD_PATH)/Makefile
 
 #制作编译Spike的Makefile
-# $(REPO_MAKEFILE):
-# 	@mkdir -p $(@D)
-# 	cd $(@D) && $(abspath $(REPO_PATH))/configure
-# 	sed -i -e 's/-g -O2/-O2/' $@
-
 $(REPO_MAKEFILE):
-	$(info [----------------------INFO] Creating directory $(@D))
 	@mkdir -p $(@D)
-	$(info [----------------------INFO] Running configure script in $(@D))
 	cd $(@D) && $(abspath $(REPO_PATH))/configure
-	$(info [----------------------INFO] Modifying Makefile: replacing -g -O2 with -O2)
 	sed -i -e 's/-g -O2/-O2/' $@
 
 SPIKE = $(REPO_BUILD_PATH)/spike
@@ -35,7 +27,7 @@ INC_PATH  = -I$(REPO_PATH) $(addprefix -I$(REPO_PATH)/, $(inc_dependencies))
 lib_dependencies = libspike_main.a libriscv.a libdisasm.a libsoftfloat.a libfesvr.a libfdt.a
 INC_LIBS  = $(addprefix $(REPO_PATH)/build/, $(lib_dependencies))
 
-NAME = riscv64-spike-so
+NAME = riscv-spike-so
 BINARY = $(BUILD_DIR)/$(NAME)
 SRCS = difftest.cc
 
