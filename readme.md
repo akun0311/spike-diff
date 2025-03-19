@@ -8,3 +8,6 @@
 
 ## 编译后的名字
 由`Makefile`中的`NAME = riscv-spike-so` 和`BINARY = $(BUILD_DIR)/$(NAME)`控制
+
+## 如何使用
+执行`make`命令即可编译出来`spike`作为`Difftest`的动态链接库
