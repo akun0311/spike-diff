@@ -27,12 +27,19 @@ INC_PATH  = -I$(REPO_PATH) $(addprefix -I$(REPO_PATH)/, $(inc_dependencies))
 lib_dependencies = libspike_main.a libriscv.a libdisasm.a libsoftfloat.a libfesvr.a libfdt.a
 INC_LIBS  = $(addprefix $(REPO_PATH)/build/, $(lib_dependencies))
 
-NAME = riscv-spike-so
+NAME = riscv64-spike-so
 BINARY = $(BUILD_DIR)/$(NAME)
 SRCS = difftest.cc
 
 $(BINARY): $(SPIKE) $(SRCS)
 	g++ -std=c++17 -O2 -shared -fPIC -fvisibility=hidden $(INC_PATH) $(SRCS) $(INC_LIBS) -o $@
+	@if [ ! -z "$(SIM_HOME)" ]; then \
+		mkdir -p $(SIM_HOME)/diff; \
+		cp $@ $(SIM_HOME)/diff/; \
+		echo "结果已同步至 $(SIM_HOME)/diff"; \
+	else \
+		echo "警告: SIM_HOME 未设置，结果仅保留在 $(BUILD_DIR)"; \
+	fi
 clean:
 	rm -rf $(BUILD_DIR)
 all: $(BINARY)

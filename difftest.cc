@@ -6,11 +6,12 @@
 
 
 #define NR_GPR 32
+#define NR_CSR 4096
 #define CONFIG_MSIZE 0x8000000
 #define __EXPORT __attribute__((visibility("default")))
 enum { DIFFTEST_TO_DUT, DIFFTEST_TO_REF };
 
-#define RV32
+#define RV64
 #ifdef RV32
   typedef uint32_t word_t;
   typedef int32_t sword_t;
@@ -23,14 +24,6 @@ enum { DIFFTEST_TO_DUT, DIFFTEST_TO_REF };
   typedef uint64_t paddr_t;
 #endif
 
-enum{
-  x0 = 0,
-  MSTATUS=0,
-  MTVEC,
-  MEPC,
-  MCAUSE,
-  ERROR_CSR_IDX,
-};
 
 static std::vector<std::pair<reg_t, abstract_device_t*>> difftest_plugin_devices;
 static std::vector<std::string> difftest_htif_args;
@@ -48,10 +41,11 @@ static debug_module_config_t difftest_dm_config = {
   .support_impebreak = true
 };
 
+//这个是用于difftest的结构体
 struct diff_context_t {
   word_t gpr[32];
   word_t pc;
-  word_t csr[4];
+  word_t csr[4096];
 };
 static sim_t* s = NULL;
 static processor_t *p = NULL;
@@ -72,19 +66,22 @@ void sim_t::diff_get_regs(void* diff_context) {
     ctx->gpr[i] = state->XPR[i];
   }
   ctx->pc = state->pc;
-  ctx->csr[MSTATUS] = state->mstatus->read();
-  printf("ctx->csr[MSTATUS]=%d\n", ctx->csr[MSTATUS] );
-  state->mtvec->read();
-  state->mcause->read();
-  state->mepc->read();
+  printf("mstatus=0x%016lx\n", state->mstatus->read());
+  printf("mtvec=0x%016lx\n",   state->mtvec->read());
+  printf("mepc=0x%016lx\n",    state->mepc->read());
 }
 
+
+//将处理器的状态写入到spike里面
 void sim_t::diff_set_regs(void* diff_context) {
   struct diff_context_t* ctx = (struct diff_context_t*)diff_context;
   for (int i = 0; i < NR_GPR; i++) {
     state->XPR.write(i, (sword_t)ctx->gpr[i]);
   }
   state->pc               = ctx->pc;
+  for (int i = 0; i < NR_CSR; ++i){
+    state->
+  }
 }
 
 void sim_t::diff_memcpy(reg_t dest, void* src, size_t n) {
@@ -97,20 +94,28 @@ void sim_t::diff_memcpy(reg_t dest, void* src, size_t n) {
 //动态链接库
 extern "C" {
 __EXPORT void difftest_memcpy(paddr_t addr, void *buf, size_t n, bool direction) {
+  
+  //将处理器的内存情况写入到spike里面
   if (direction == DIFFTEST_TO_REF) {
     s->diff_memcpy(addr, buf, n);
-  } else {
+  } 
+  //将spike的内存情况写入到处理器里面，这种情况不存在，所以不会执行
+  else {
     assert(0);
   }
 }
 
 //
 __EXPORT void difftest_regcpy(void* dut, bool direction) {
-  // `direction`为`DIFFTEST_TO_DUT`时, 获取REF的寄存器状态到`dut`;
-  // `direction`为`DIFFTEST_TO_REF`时, 设置REF的寄存器状态为`dut`;
+
+
+
+  //将处理器的状态写入到spike里面
   if (direction == DIFFTEST_TO_REF) {
     s->diff_set_regs(dut);
-  } else {
+  } 
+  //将spike的状态写入到处理器里面
+  else {
     s->diff_get_regs(dut);
   }
 }
