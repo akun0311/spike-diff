@@ -1,7 +1,7 @@
 #克隆仓库，并把仓库命名为repo
 REPO_PATH = repo
 ifeq ($(wildcard repo/spike_main),)
-  $(shell git clone --depth=1 git@github.com:NJU-ProjectN/riscv-isa-sim $(REPO_PATH))
+  $(shell git clone --depth=1 git@github.com:zhang-san-007/riscv-isa-sim $(REPO_PATH))
 endif
 
 #编译spike的build和Makefile
